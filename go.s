@@ -28,7 +28,13 @@ fin:
     SWI 0
 
 @SUBRUTINAS LOCALES
-
+/* brief pause routine */
+wait:
+	mov r0, #0x4000000      /* big number */
+sleepLoop:
+	subs r0,#1
+	bne sleepLoop @ loop delay
+	mov pc,lr
 
 @DATOS
 .data
