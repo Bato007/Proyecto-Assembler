@@ -55,6 +55,7 @@ ciclo:
 	LDR R0,=f_entrada_s         /* R0 contiene el formato de ingreso */
 	LDR R1,=entrada_actual    /* R1 contiene direccion donde almacena dato leido */
 	BL scanf
+    BL getchar
 	
 	@--Metiendo los datos al tablero
 	
