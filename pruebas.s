@@ -1,29 +1,8 @@
-/*
-    Universidad del Valle de Guatemala
-    Organizacion de Computadoras y Assembler
-    Seccion 10
 
-    Julio Herrera 19402
-    Brandon Hernandez 19376
-
-    Juego GO!
-    Este juego consiste en que dos jugadores tendran fichas, uno "X" y el otro "O".
-    El objetivo es convertir las fichas del otro jugador en fichas tuyas.
-    Para ello debes de encerrar las fichas del otro jugador de manera horizontal o vertical.
-    Proximamente... diagonal
-*/
-
-@PROGRAMA
 .global main
 .func main
 main:
-
-    /* Imprime el menu *
-    LDR R0, =draw
-    BL puts
-    LDR R0, =title
-    BL puts
-
+	
     @--Alias principales--
     cont_main .req R8
 
@@ -49,22 +28,18 @@ ciclo:
     BL puts
     BL imprimir_tablero
 
-	@--Pidiendole al usuario la fila y columna--
-    LDR R0, =msg_ingreso
-    BL puts
-
 	LDR R0,=f_entrada_s         /* R0 contiene el formato de ingreso */
 	LDR R1,=entrada_actual    /* R1 contiene direccion donde almacena dato leido */
 	BL scanf
     BL getchar
+
+
+	mov r9, #0
+	mov r1, #2
 	
 	
 	@--Metiendo los datos al tablero
-	/*
-	r9 el numero de fila que eligio el usuario - 1 (ejm. A2 -> r9 = 1)
-	r10 el numero del turno
 	
-	*/
 	@-Fila uno-
 	cmp r9, #0
 	ldreq r0, =fila_uno
@@ -87,20 +62,27 @@ ciclo:
 	
 	@--MOVIENDO LA POSICION DEL VECTOR--
 	mov r2, #4			
-	sub r1, r1, #1	@ Se le resta 1, porque el usuario ingresa (columna 1)
+	sub r1, r1, #1	@ Se le resta 1, porque el usuario ingresa (fila 1)
 	mul r2, r1		@ Indica cuanto se tiene que mover 
 	add r0, r2		@ Se mueve n espacios por el arrego r0
 	
-	@ Agregando al tablero una X o una O
+	ldr r3, [r0]	@ Moviendo el valor actual en memoria a r0
 	
+	cmp r3, #0x2D		@ Verificando que no este ocupada
+	bne ingreso_ocupado
 	
+	@@@ Agregando al tablero una X o una O
+	cmp r10, #1
+	ldreq r10, =ficha_uno		@ 'X'
+	ldrne r10, = ficha_dos		@ 'O'
 	
+	ldr r10, [r10]				@ Obteniendo el valor 
+	str	r10, [r0]				@ Metiendo 'X' o 'O' al arreglo 
 	
+	@@@x
 	@--Sumandole 1 al turno y comparando si ya llego a 25--
 	add cont_main, #1
-	cmp cont_main, #26
-
-	
+	cmp cont_main, #4
 	bne ciclo
 	beq fin
 
@@ -110,15 +92,23 @@ ingreso_invalido:
 	bl puts
 	b ciclo
 
+@---INGRESO LUGAR LLENO EN EL TABLERO--- @@@
+ingreso_ocupado:
+	ldr r0, =mensaje_ocupado
+	bl puts
+	b ciclo
+
 @---FIN DEL PROGRAMA---
 fin:
 
 	.unreq cont_main
-
     MOV R7, #1      /* R7 = 1 : Salida SO */
     SWI 0
 
 @SUBRUTINAS LOCALES
+
+
+
 
 /*
 Subrutina que imprime la informacion del tablero actual
@@ -231,13 +221,23 @@ get_player_by_turn:
     turno_player:
         .asciz  "Turno del jugador %d"
     turno_no:
-        .asciz  "\t\tTurno Nº. %d"
+        .asciz  "\t\tTurno Nยบ. %d"
+	
+	@@@--Fichas--
+	ficha_uno:
+		.asciz "X"
+	ficha_dos:
+		.asciz "O"
 	
     @--Mensajes--
 	mensaje_error:
 		.asciz "Ingreso invalido, vuelva a intentar"
     msg_ingreso:
         .asciz  "\nIngresa la direccion de la casilla que quieres ingresar (ej. B3)"
+
+	@@@
+	mensaje_ocupado:
+		.asciz "Esta casilla esta ocupada"
 
     entrada_actual:
         .asciz  "Z0"
@@ -247,46 +247,3 @@ get_player_by_turn:
         .asciz  "%s"
     f_enter:
         .asciz  "\n"
-
-
-	@--ASCIIART--
-	title:
-        .asciz  "
-   __          ________ _      _____ ____  __  __ ______   _______ ____  
-   \\ \\        / /  ____| |    / ____/ __ \\|  \\/  |  ____| |__   __/ __ \\ 
-    \\ \\  /\\  / /| |__  | |   | |   | |  | | \\  / | |__       | | | |  | |
-     \\ \\/  \\/ / |  __| | |   | |   | |  | | |\\/| |  __|      | | | |  | |
-      \\  /\\  /  | |____| |___| |___| |__| | |  | | |____     | | | |__| |
-       \\/  \\/   |______|______\\_____\\____/|_|  |_|______|    |_|  \\____/ 
-                                __________  __
-                               / ____/ __ \\/ /
-                              / / __/ / / / / 
-                             / /_/ / /_/ /_/  
-                             \\____/\\____(_)   
-  _  ____  _____    _    ______   __  _____ ___    ____  _        _ __   _____ 
- (_)|  _ \\| ____|  / \\  |  _ \\ \\ / / |_   _/ _ \\  |  _ \\| |      / \\\\ \\ / /__ \\
- | || |_) |  _|   / _ \\ | | | \\ V /    | || | | | | |_) | |     / _ \\\\ V /  / /
-/ /_|  _ <| |___ / ___ \\| |_| || |     | || |_| | |  __/| |___ / ___ \\| |  |_| 
-\\___|_| \\_\\_____/_/   \\_\\____/ |_|     |_| \\___/  |_|   |_____/_/   \\_\\_|  (_) "
-
-    draw:
-        .asciz  "
-                    ////////////////////////////////////////
-                    ////////////////////////////////////////
-                    ///////////////////////....:////////////
-                    ////////////////////:........../////////
-                    ///////////////////.............////////
-                    //////////////////............,:.///////
-                    //////////////////...............///////
-                    //////////////////,..............///////
-                    ///////////////////.............////////
-                    /////////////////////.........8888888888
-                    ///////8888888/////////////8888888888888
-                    /////88888888888///////88888888888888888
-                    ///888888888888888////888888888888888888
-                    ///888888888888888../8888888888888888888
-                    /////888888888888.//88888888888888888888
-                    ///////88888888////888888888888888888888
-                    //////==========///888888888888888888888
-                    /////============//888888888888888888888
-                    ////////======//////88888888888888888888"
