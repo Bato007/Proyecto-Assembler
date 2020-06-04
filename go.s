@@ -121,6 +121,70 @@ fin:
 @SUBRUTINAS LOCALES
 
 /*
+	Cambia las fichas de dicha fila
+	Param: r0 -> La direccion de memoria del arreglo (fila)
+	r1 -> La columna en la que esta (en este caso no sirve, pero es para el resto)
+	r2 -> El tipo de ficha que se puso en este turno 
+	r3 -> *No hay requerimiento
+	Return: no retorna nada, pero si cambia algo en direccion
+*/
+cambio_fila:
+	push {r4-r12, lr}
+
+	@ Guardando esto para poder manipular luego r0 
+	mov r4, r0
+	mov r5, #0		@ Contador
+	mov r6, #5		@ Primer dato que se parece a la ficha
+	mov r7, #0		@ Ultimo dato qeu se parece a la ficha
+
+	cambio_ficha:
+		
+		ldr r9, [r0]	@ Obteniendo el valor en memoria de r0
+		
+		cmp r9, r2		@ Comparando para ver si es la ficha buscada
+		bne skip
+		
+		@ Aqu? ya se sabe que es la ficha buscada
+		cmp r6, r5		@ Comparando el contador para saber si es mas peque?o
+		movgt r6, r5	@ Moviendo si r6 > r5, entonces r6 = r5
+		
+		cmp r7, r5 		@ Comprobando el contador para saber si es mas grande
+		movlt r7, r5 	@ Moviendo si r7 < r5, entonces r7 = r5
+	
+	skip:	
+		add r5, r5, #1	@ Sumandole uno al contador
+		cmp r5, #5
+		addne r0, #4		@ Agregandole 4 a la direccion de memoria 
+		bne cambio_ficha
+
+	@ Ahora se cambian las fichas
+	mov r4, r0				@ Regresando a r0 la posicion original
+	mov r10, #4			@ Moviendo a r10 #4 porque la pendejada no deja multiplicar solo asi
+	mul r6, r10			@ Para saber cuanto se tiene que mover 
+	mul r7, r10			@ Para saber hasta donde se tiene que mover 
+	add r4, r6
+	
+	
+	ciclo_cambio_fila:
+		add r4, #4		@ Cambiando de posicion de r0 al siguiente valor
+				
+		cmp r7, r6		@ Verificando si ya esta en la misma posicion 
+		beq fin_cambio_filas
+		
+		add r6, #4		@ Sumandole al contador 
+		
+		@--Comparando si esta vacia o no--
+		ldr r9, [r4]		@ Obteniendo el valor en memoria de r0
+		cmp r9, #0x2D		@ Verificando que no este ocupada
+		strne r2, [r4]		@ Guardando la nueva ficha
+		
+		b ciclo_cambio_fila
+	
+	fin_cambio_filas:
+		pop {r4-r12, pc}
+
+
+/*
 Subrutina que imprime la informacion del tablero actual
 */
 imprimir_tablero:

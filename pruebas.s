@@ -10,6 +10,7 @@ main:
 	mov cont_main, #1
 
 @---EMPIEZA EL JUEGO---
+
 ciclo:
 
     @--Imprimir tablero--
@@ -33,11 +34,9 @@ ciclo:
 	BL scanf
     BL getchar
 
-
-	mov r9, #0
 	mov r1, #2
-	
-	
+	mov r9, #0
+		
 	@--Metiendo los datos al tablero
 	
 	@-Fila uno-
@@ -60,24 +59,33 @@ ciclo:
 	cmp r9, #4
 	ldreq r0, =fila_cinco
 	
+	mov r11, r0 		@ Para saber la fila en la que esta 
+	
 	@--MOVIENDO LA POSICION DEL VECTOR--
 	mov r2, #4			
 	sub r1, r1, #1	@ Se le resta 1, porque el usuario ingresa (fila 1)
 	mul r2, r1		@ Indica cuanto se tiene que mover 
 	add r0, r2		@ Se mueve n espacios por el arrego r0
 	
-	ldr r3, [r0]	@ Moviendo el valor actual en memoria a r0
+	ldr r4, [r0]	@ Moviendo el valor actual en memoria a r0
 	
-	cmp r3, #0x2D		@ Verificando que no este ocupada
+	cmp r4, #0x2D		@ Verificando que no este ocupada
 	bne ingreso_ocupado
 	
 	@@@ Agregando al tablero una X o una O
 	cmp r10, #1
-	ldreq r10, =ficha_uno		@ 'X'
+	ldreq r10, = ficha_uno		@ 'X'
 	ldrne r10, = ficha_dos		@ 'O'
 	
 	ldr r10, [r10]				@ Obteniendo el valor 
 	str	r10, [r0]				@ Metiendo 'X' o 'O' al arreglo 
+	
+	@ Pasando los datos para poder cambiar las 'fichas'
+	mov r2, r10	@ Mete el valor de la ficha
+	mov r0, r11	@ Metiendo la fila que corresponde
+	
+	@ Cambiando las fichas por fila
+	bl cambio_fila
 	
 	@@@x
 	@--Sumandole 1 al turno y comparando si ya llego a 25--
@@ -107,8 +115,78 @@ fin:
 
 @SUBRUTINAS LOCALES
 
+/*
+	Cambia las fichas de dicha fila
+	Param: r0 -> La direccion de memoria del arreglo (fila)
+	r1 -> La columna en la que esta (en este caso no sirve, pero es para el resto)
+	r2 -> El tipo de ficha que se puso en este turno 
+	r3 -> *No hay requerimiento
+	Return: no retorna nada, pero si cambia algo en direccion
+*/
+cambio_fila:
+	push {r4-r12, lr}
 
+	mov r12, r1 @X
+	@ Guardando esto para poder manipular luego r0 
+	mov r4, r0
+	mov r5, #0		@ Contador
+	mov r6, #5		@ Primer dato que se parece a la ficha
+	mov r7, #0		@ Ultimo dato qeu se parece a la ficha
 
+	cambio_ficha:
+		
+		ldr r9, [r0]	@ Obteniendo el valor en memoria de r0
+		
+		cmp r9, r2		@ Comparando para ver si es la ficha buscada
+		bne skip
+		
+		@ Aquí ya se sabe que es la ficha buscada
+		cmp r6, r5		@ Comparando el contador para saber si es mas pequeño
+		movgt r6, r5	@ Moviendo si r6 > r5, entonces r6 = r5
+		
+		cmp r7, r5 		@ Comprobando el contador para saber si es mas grande
+		movlt r7, r5 	@ Moviendo si r7 < r5, entonces r7 = r5
+	
+	skip:	
+		add r5, r5, #1	@ Sumandole uno al contador
+		cmp r5, #5
+		addne r0, #4		@ Agregandole 4 a la direccion de memoria 
+		bne cambio_ficha
+
+	ldr r0, =pos_lateral
+	mov r1, r6
+	bl printf
+	
+	ldr r0, =pos_lateral
+	mov r1, r7
+	bl printf
+
+	@ Ahora se cambian las fichas
+	mov r4, r0				@ Regresando a r0 la posicion original
+	mov r10, #4			@ Moviendo a r10 #4 porque la pendejada no deja multiplicar solo asi
+	mul r6, r10			@ Para saber cuanto se tiene que mover 
+	mul r7, r10			@ Para saber hasta donde se tiene que mover 
+	add r4, r6
+	
+	
+	ciclo_cambio_fila:
+		add r4, #4		@ Cambiando de posicion de r0 al siguiente valor
+				
+		cmp r7, r6		@ Verificando si ya esta en la misma posicion 
+		beq fin_cambio_filas
+		
+		add r6, #4		@ Sumandole al contador 
+		
+		@--Comparando si esta vacia o no--
+		ldr r9, [r4]		@ Obteniendo el valor en memoria de r0
+		cmp r9, #0x2D		@ Verificando que no este ocupada
+		strne r2, [r4]		@ Guardando la nueva ficha
+		
+		b ciclo_cambio_fila
+	
+	fin_cambio_filas:
+		mov r1, r12 @X
+		pop {r4-r12, pc}
 
 /*
 Subrutina que imprime la informacion del tablero actual
