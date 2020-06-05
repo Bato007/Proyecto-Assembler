@@ -71,11 +71,12 @@ ciclo:
     CMP R1, #9
     BEQ ingreso_casilla_invalida
 	
+    MOV R9, R0      /* Para usarlo en el siguiente bloque, y determinar que direccion de fila cargar */
+
 	@--Metiendo los datos al tablero
 	/*
 	r9 el numero de fila que eligio el usuario - 1 (ejm. A2 -> r9 = 1)
 	r10 el numero del turno
-	
 	*/
 	@-Fila uno-
 	cmp r9, #0
