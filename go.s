@@ -27,6 +27,8 @@ main:
 */
     @--Alias principales--
     cont_main .req R8
+    fila .req R9
+    columna .req r11
 
 	@ Moviendo el valor 1 al contador r8
 	mov cont_main, #1
@@ -72,19 +74,8 @@ ciclo:
     CMP R1, #9
     BEQ ingreso_casilla_invalida
 	
-    MOV R9, R0      /* Para usarlo en el siguiente bloque, y determinar que direccion de fila cargar */
-	mov r12, r1
-	
-
-	mov r1, r9
-	ldr r0, =pos_lateral
-	bl printf
-	
-	mov r1, r12
-	ldr r0, =pos_lateral
-	bl printf
-
-	mov r1, r12
+    MOV fila, R0      /* Para usarlo en el siguiente bloque, y determinar que direccion de fila cargar, la fila la carga desde 0 */
+	mov columna, r1     /* La columna la obtiene desde 1, ej. A = 1 ; B = 2 ... */
 
 	@--Metiendo los datos al tablero
 	/*
@@ -92,33 +83,36 @@ ciclo:
 	r10 el numero del turno
 	*/
 	@-Fila uno-
-	cmp r9, #0
+	cmp fila, #0
 	ldreq r0, =fila_uno
 		
 	@-Fila dos-
-	cmp r9, #1
+	cmp fila, #1
 	ldreq r0, =fila_dos
 	
 	@-Fila tres-
-	cmp r9, #2
+	cmp fila, #2
 	ldreq r0, =fila_tres
 	
 	@-Fila cuatro-
-	cmp r9, #3
+	cmp fila, #3
 	ldreq r0, =fila_cuatro
 	
 	@-Fila cinco-
-	cmp r9, #4
+	cmp fila, #4
 	ldreq r0, =fila_cinco
 	
 	@--MOVIENDO LA POSICION DEL VECTOR--
-	mov r1, #1 @ Borrar cuando a r1 le llegue un valor mayor a 3
-	mov r2, #4			
-	sub r1, r1, #1	@ Se le resta 1, porque el usuario ingresa (columna 1)
-	mul r2, r1		@ Indica cuanto se tiene que mover 
-	add r0, r0, r2		@ Se mueve n espacios por el arrego r0
+	mov r2, #4          @ multiplicador para aumentar debidamente en la direccion
+	sub columna, #1	        @ Se le resta 1, porque el usuario ingresa (columna 1)
+	mul r2, columna		    @ Indica cuanto se tiene que mover 
+	add r0, r2		@ Se mueve n espacios por el arrego r0
 	
-	ldr r4, [r0]	@ Moviendo el valor actual en memoria a r0
+	ldr r4, [r0]	    @ Moviendo el valor actual en memoria a r0
+
+    mov r1, r4
+    ldr r0, =casilla
+    bl printf
 	
 	cmp r4, #0x2D		@ Verificando que no este ocupada
 	bne ingreso_ocupado
@@ -133,7 +127,7 @@ ciclo:
 	
 	@ Pasando los datos para poder cambiar las 'fichas'
 	mov r2, r10	@ Mete el valor de la ficha
-	mov r0, r11	@ Metiendo la fila que corresponde
+	mov r0, columna	@ Metiendo la fila que corresponde
 	
 	@ Cambiando las fichas por fila
 	@bl cambio_fila
@@ -175,6 +169,8 @@ ingreso_ocupado:
 fin:
 
 	.unreq cont_main
+    .unreq fila
+    .unreq columna
 
     MOV R7, #1      /* R7 = 1 : Salida SO */
     SWI 0
