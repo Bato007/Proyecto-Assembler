@@ -347,9 +347,9 @@ get_positions:
     LDR R2, =entrada_actual
     LDRB R2, [R2]
     LDR R4, =columnas_indice
-    MOV R5, #0      /* Contador */
+    MOV R5, #1      /* Contador */
     ciclo_gp:
-        CMP R5, #5
+        CMP R5, #6
         MOVEQ R5, #9
         BEQ fin_gp
         LDRB R6, [R4]
