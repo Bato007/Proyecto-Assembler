@@ -166,14 +166,12 @@ cambio_fila:
 	bl printf
 	mov r0, r11
 
-
 	@ Ahora se cambian las fichas
 	mov r4, r0				@ Regresando a r0 la posicion original
 	mov r10, #4			@ Moviendo a r10 #4 porque la pendejada no deja multiplicar solo asi
 	mul r6, r10			@ Para saber cuanto se tiene que mover 
 	mul r7, r10			@ Para saber hasta donde se tiene que mover 
 	add r4, r6
-	
 	
 	ciclo_cambio_fila:
 		cmp r7, r6		@ Verificando si ya esta en la misma posicion 
