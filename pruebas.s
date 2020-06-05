@@ -9,6 +9,8 @@ main:
 	@ Moviendo el valor 1 al contador r8
 	mov cont_main, #1
 
+	mov r9, #0
+
 @---EMPIEZA EL JUEGO---
 
 ciclo:
@@ -35,36 +37,36 @@ ciclo:
     BL getchar
 
 	mov r1, #2
-	mov r9, #0
+	add r9, r9, #2
 		
 	@--Metiendo los datos al tablero
 	
 	@-Fila uno-
-	cmp r9, #0
+	cmp r1, #0
 	ldreq r0, =fila_uno
 		
 	@-Fila dos-
-	cmp r9, #1
+	cmp r1, #1
 	ldreq r0, =fila_dos
 	
 	@-Fila tres-
-	cmp r9, #2
+	cmp r1, #2
 	ldreq r0, =fila_tres
 	
 	@-Fila cuatro-
-	cmp r9, #3
+	cmp r1, #3
 	ldreq r0, =fila_cuatro
 	
 	@-Fila cinco-
-	cmp r9, #4
+	cmp r1, #4
 	ldreq r0, =fila_cinco
 	
 	mov r11, r0 		@ Para saber la fila en la que esta 
 	
 	@--MOVIENDO LA POSICION DEL VECTOR--
 	mov r2, #4			
-	sub r1, r1, #1	@ Se le resta 1, porque el usuario ingresa (fila 1)
-	mul r2, r1		@ Indica cuanto se tiene que mover 
+	sub r9, r9, #1	@ Se le resta 1, porque el usuario ingresa (fila 1)
+	mul r2, r9		@ Indica cuanto se tiene que mover 
 	add r0, r2		@ Se mueve n espacios por el arrego r0
 	
 	ldr r4, [r0]	@ Moviendo el valor actual en memoria a r0
@@ -74,23 +76,23 @@ ciclo:
 	
 	@@@ Agregando al tablero una X o una O
 	cmp r10, #1
-	ldreq r10, = ficha_uno		@ 'X'
-	ldrne r10, = ficha_dos		@ 'O'
+	ldreq r2, = ficha_uno		@ 'X'
+	ldrne r2, = ficha_dos		@ 'O'
 	
-	ldr r10, [r10]				@ Obteniendo el valor 
-	str	r10, [r0]				@ Metiendo 'X' o 'O' al arreglo 
+	ldr r2, [r2]				@ Obteniendo el valor 
+	str	r2, [r0]				@ Metiendo 'X' o 'O' al arreglo 
 	
 	@ Pasando los datos para poder cambiar las 'fichas'
-	mov r2, r10	@ Mete el valor de la ficha
 	mov r0, r11	@ Metiendo la fila que corresponde
 	
 	@ Cambiando las fichas por fila
+	mov r1, r9
 	bl cambio_fila
 	
 	@@@x
 	@--Sumandole 1 al turno y comparando si ya llego a 25--
 	add cont_main, #1
-	cmp cont_main, #4
+	cmp cont_main, #6
 	bne ciclo
 	beq fin
 
@@ -127,6 +129,7 @@ fin:
 cambio_fila:
 	push {r4-r12, lr}
 
+	mov r11, r0
 	mov r12, r1 @X
 	@ Guardando esto para poder manipular luego r0 
 	mov r4, r0
@@ -161,6 +164,8 @@ cambio_fila:
 	ldr r0, =pos_lateral
 	mov r1, r7
 	bl printf
+	mov r0, r11
+
 
 	@ Ahora se cambian las fichas
 	mov r4, r0				@ Regresando a r0 la posicion original
@@ -180,7 +185,7 @@ cambio_fila:
 		@--Comparando si esta vacia o no--
 		ldr r9, [r4]		@ Obteniendo el valor en memoria de r0
 		cmp r9, #0x2D		@ Verificando que no este ocupada
-		strne r2, [r4]		@ Guardando la nueva ficha
+		strne r2, [r4]		@ Guardando la nueva ficha AQUI SE HACE EL CAMBIO
 		
 		b ciclo_cambio_fila
 	
@@ -303,9 +308,9 @@ get_player_by_turn:
 	
 	@@@--Fichas--
 	ficha_uno:
-		.asciz "X"
+		.word 0x58  @ La X
 	ficha_dos:
-		.asciz "O"
+		.word 0x4F  @ La O
 	
     @--Mensajes--
 	mensaje_error:

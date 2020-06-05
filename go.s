@@ -18,12 +18,13 @@
 .func main
 main:
 
+
     /* Imprime el menu */
-    LDR R0, =draw
+    /*LDR R0, =draw
     BL puts
     LDR R0, =title
     BL puts
-
+*/
     @--Alias principales--
     cont_main .req R8
 
@@ -72,6 +73,18 @@ ciclo:
     BEQ ingreso_casilla_invalida
 	
     MOV R9, R0      /* Para usarlo en el siguiente bloque, y determinar que direccion de fila cargar */
+	mov r12, r1
+	
+	add r9, #1
+	mov r1, r9
+	ldr r0, =pos_lateral
+	bl printf
+	
+	mov r1, r12
+	ldr r0, =pos_lateral
+	bl printf
+
+	mov r1, r12
 
 	@--Metiendo los datos al tablero
 	/*
@@ -104,8 +117,25 @@ ciclo:
 	mul r2, r1		@ Indica cuanto se tiene que mover 
 	add r0, r2		@ Se mueve n espacios por el arrego r0
 	
-	@ Agregando al tablero una X o una O
+	ldr r4, [r0]	@ Moviendo el valor actual en memoria a r0
 	
+	cmp r4, #0x2D		@ Verificando que no este ocupada
+	bne ingreso_ocupado
+	
+	@ Agregando al tablero una X o una O
+	cmp r10, #1
+	ldreq r10, = ficha_uno		@ 'X'
+	ldrne r10, = ficha_dos		@ 'O'
+	
+	ldr r10, [r10]				@ Obteniendo el valor 
+	str	r10, [r0]				@ Metiendo 'X' o 'O' al arreglo 
+	
+	@ Pasando los datos para poder cambiar las 'fichas'
+	mov r2, r10	@ Mete el valor de la ficha
+	mov r0, r11	@ Metiendo la fila que corresponde
+	
+	@ Cambiando las fichas por fila
+	@bl cambio_fila
 	
 	
 	
@@ -156,6 +186,7 @@ fin:
 	r1 -> La columna en la que esta (en este caso no sirve, pero es para el resto)
 	r2 -> El tipo de ficha que se puso en este turno 
 	r3 -> *No hay requerimiento
+	Autor: Brandon Hern?ndez
 	Return: no retorna nada, pero si cambia algo en direccion
 */
 cambio_fila:
@@ -169,7 +200,7 @@ cambio_fila:
 
 	cambio_ficha:
 		
-		ldr r9, [r0]	@ Obteniendo el valor en memoria de r0
+		ldr r9, [r4]	@ Obteniendo el valor en memoria de r0
 		
 		cmp r9, r2		@ Comparando para ver si es la ficha buscada
 		bne skip
@@ -184,7 +215,7 @@ cambio_fila:
 	skip:	
 		add r5, r5, #1	@ Sumandole uno al contador
 		cmp r5, #5
-		addne r0, #4		@ Agregandole 4 a la direccion de memoria 
+		addne r4, #4		@ Agregandole 4 a la direccion de memoria 
 		bne cambio_ficha
 
 	@ Ahora se cambian las fichas
@@ -193,7 +224,6 @@ cambio_fila:
 	mul r6, r10			@ Para saber cuanto se tiene que mover 
 	mul r7, r10			@ Para saber hasta donde se tiene que mover 
 	add r4, r6
-	
 	
 	ciclo_cambio_fila:
 		add r4, #4		@ Cambiando de posicion de r0 al siguiente valor
@@ -366,6 +396,12 @@ get_positions:
     turno_no:
         .asciz  "\t\tTurno Nº. %d"
 	
+	@--Fichas--
+	ficha_uno:
+		.asciz "X"
+	ficha_dos:
+		.asciz "O"
+	
     @--Mensajes--
 	mensaje_error_casilla:
 		.asciz "Ingreso invalido. La casilla que ingresaste no existe"
@@ -389,6 +425,7 @@ get_positions:
     f_enter:
         .asciz  "\n"
 
+/*
 	@--ASCIIART--
 	title:
         .asciz  "
@@ -430,3 +467,4 @@ get_positions:
                     //////==========///888888888888888888888
                     /////============//888888888888888888888
                     ////////======//////88888888888888888888"
+*/
