@@ -192,6 +192,27 @@ cambio_fila:
 		pop {r4-r12, pc}
 
 /*
+	Cambia las fichas de dicha columna
+	Param: r0 -> La direccion de memoria del arreglo (fila, pero es para el resto)
+	r1 -> La columna en la que esta 
+	r2 -> El tipo de ficha que se puso en este turno 
+	r3 -> *No hay requerimiento
+	Autor: Brandon Hernández
+	Return: no retorna nada, pero si cambia algo en direccion
+*/
+cambio_columna:
+	push {r4-r12, lr}
+	
+	mov r4, #4			@ Servira para mover 
+	
+	
+	
+	
+	fin_cambio_columnas:
+		pop {r4-r12, pc}
+
+
+/*
 Subrutina que imprime la informacion del tablero actual
 */
 imprimir_tablero:

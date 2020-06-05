@@ -75,7 +75,7 @@ ciclo:
     MOV R9, R0      /* Para usarlo en el siguiente bloque, y determinar que direccion de fila cargar */
 	mov r12, r1
 	
-	add r9, #1
+
 	mov r1, r9
 	ldr r0, =pos_lateral
 	bl printf
@@ -112,10 +112,11 @@ ciclo:
 	ldreq r0, =fila_cinco
 	
 	@--MOVIENDO LA POSICION DEL VECTOR--
+	mov r1, #1 @ Borrar cuando a r1 le llegue un valor mayor a 3
 	mov r2, #4			
 	sub r1, r1, #1	@ Se le resta 1, porque el usuario ingresa (columna 1)
 	mul r2, r1		@ Indica cuanto se tiene que mover 
-	add r0, r2		@ Se mueve n espacios por el arrego r0
+	add r0, r0, r2		@ Se mueve n espacios por el arrego r0
 	
 	ldr r4, [r0]	@ Moviendo el valor actual en memoria a r0
 	
