@@ -89,6 +89,13 @@ ciclo:
 	mov r1, r9
 	bl cambio_fila
 	
+	
+	@ Cambio de las fichas por columnas
+	bl convertir_columnas_a_filas		
+	ldr r0, =fila_aux					@ Se obtiene la fia aux
+	bl cambio_fila						@ Se ordena la fila aux
+	bl cambio_columna					@ Se cambia la fila por columna
+	
 	@@@x
 	@--Sumandole 1 al turno y comparando si ya llego a 25--
 	add cont_main, #1
@@ -117,6 +124,8 @@ fin:
 
 @SUBRUTINAS LOCALES
 
+
+@---CAMBIO POR FILAS---
 /*
 	Cambia las fichas de dicha fila
 	Param: r0 -> La direccion de memoria del arreglo (fila)
@@ -191,6 +200,59 @@ cambio_fila:
 		mov r1, r12 @X
 		pop {r4-r12, pc}
 
+
+@---CAMBIO DE COLUMNAS---
+
+/*
+	Se encarga de convertir la columna en fila 
+	Param: r0 -> La direccion de memoria del arreglo (fila, pero es para el resto)
+	r1 -> La columna en la que esta 
+	r2 -> El tipo de ficha que se puso en este turno 
+	r3 -> *No hay requerimiento
+	Autor: Brandon Hernández
+	Return: No retorna nada D:
+*/
+convertir_columnas_a_filas:
+	push {r4-r12, lr}
+	
+	@ Obteniendo la cantidad de movimientos que se deben de mover
+	mov r4, #4			@ Servira para mover por el arreglo
+	mul r4, r1
+	
+	@ Moviendo todas las filas a la columna correspondiente
+	ldr r5, =fila_aux
+	
+	ldr r6, =fila_uno	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r6, [r6]
+	str r6, [r5]		@ Guardando un valor
+	add r5, r5, #4		@ Pasando a la siguiente posicion
+	
+	ldr r6, =fila_dos	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r6, [r6]
+	str r6, [r5]		@ Guardando un valor
+	add r5, r5, #4		@ Pasando a la siguiente posicion
+	
+	ldr r6, =fila_tres	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r6, [r6]
+	str r6, [r5]		@ Guardando un valor
+	add r5, r5, #4		@ Pasando a la siguiente posicion
+	
+	ldr r6, =fila_cuatro	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r6, [r6]
+	str r6, [r5]		@ Guardando un valor
+	add r5, r5, #4		@ Pasando a la siguiente posicion
+	
+	ldr r6, =fila_cinco	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r6, [r6]
+	str r6, [r5]		@ Guardando un valor
+	
+	pop {r4-r12, pc}
+
 /*
 	Cambia las fichas de dicha columna
 	Param: r0 -> La direccion de memoria del arreglo (fila, pero es para el resto)
@@ -203,13 +265,44 @@ cambio_fila:
 cambio_columna:
 	push {r4-r12, lr}
 	
-	mov r4, #4			@ Servira para mover 
+	@ Obteniendo la cantidad de movimientos que se deben de mover
+	mov r4, #4			@ Servira para mover por el arreglo
+	mul r4, r1
 	
+	@ Moviendo todas las filas a la columna correspondiente
+	ldr r5, =fila_aux
 	
+	ldr r6, =fila_uno	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r9, [r5]		@ Obteniendo el valor de la variable aux
+	str r9, [r6]		@ Guardando el valor en la fila correspondiente
+	add r5, r5, #4		@ Pasando a la siguiente posicion
 	
+	ldr r6, =fila_dos	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r9, [r5]		@ Obteniendo el valor de la variable aux
+	str r9, [r6]		@ Guardando el valor en la fila correspondiente
+	add r5, r5, #4		@ Pasando a la siguiente posicion
 	
-	fin_cambio_columnas:
-		pop {r4-r12, pc}
+	ldr r6, =fila_tres	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r9, [r5]		@ Obteniendo el valor de la variable aux
+	str r9, [r6]		@ Guardando el valor en la fila correspondiente
+	add r5, r5, #4		@ Pasando a la siguiente posicion
+	
+	ldr r6, =fila_cuatro	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r9, [r5]		@ Obteniendo el valor de la variable aux
+	str r9, [r6]		@ Guardando el valor en la fila correspondiente
+	add r5, r5, #4		@ Pasando a la siguiente posicion
+	
+	ldr r6, =fila_cinco	@ Obteniendo la direccion y moviendos la cantidad deseada
+	add r6, r6, r4		
+	ldr r9, [r5]		@ Obteniendo el valor de la variable aux
+	str r9, [r6]		@ Guardando el valor en la fila correspondiente
+	
+	pop {r4-r12, pc}
+
 
 
 /*
@@ -307,6 +400,10 @@ get_player_by_turn:
 	fila_cuatro:
 		.word 0x2D, 0x2D, 0x2D, 0x2D, 0x2D
 	fila_cinco:
+		.word 0x2D, 0x2D, 0x2D, 0x2D, 0x2D
+	
+	@ Fila Auxiliar
+	fila_aux:
 		.word 0x2D, 0x2D, 0x2D, 0x2D, 0x2D
 
 	@--Mostrar tablero go--
