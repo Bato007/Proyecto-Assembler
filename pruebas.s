@@ -121,6 +121,7 @@ fin:
 	r1 -> La columna en la que esta (en este caso no sirve, pero es para el resto)
 	r2 -> El tipo de ficha que se puso en este turno 
 	r3 -> *No hay requerimiento
+	Autor: Brandon Hernández
 	Return: no retorna nada, pero si cambia algo en direccion
 */
 cambio_fila:
@@ -135,7 +136,7 @@ cambio_fila:
 
 	cambio_ficha:
 		
-		ldr r9, [r0]	@ Obteniendo el valor en memoria de r0
+		ldr r9, [r4]	@ Obteniendo el valor en memoria de r0
 		
 		cmp r9, r2		@ Comparando para ver si es la ficha buscada
 		bne skip
@@ -150,7 +151,7 @@ cambio_fila:
 	skip:	
 		add r5, r5, #1	@ Sumandole uno al contador
 		cmp r5, #5
-		addne r0, #4		@ Agregandole 4 a la direccion de memoria 
+		addne r4, #4		@ Agregandole 4 a la direccion de memoria 
 		bne cambio_ficha
 
 	ldr r0, =pos_lateral
@@ -170,11 +171,10 @@ cambio_fila:
 	
 	
 	ciclo_cambio_fila:
-		add r4, #4		@ Cambiando de posicion de r0 al siguiente valor
-				
 		cmp r7, r6		@ Verificando si ya esta en la misma posicion 
 		beq fin_cambio_filas
 		
+		add r4, #4		@ Cambiando de posicion de r0 al siguiente valor
 		add r6, #4		@ Sumandole al contador 
 		
 		@--Comparando si esta vacia o no--
