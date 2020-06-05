@@ -18,7 +18,7 @@
 .func main
 main:
 
-    /* Imprime el menu *
+    /* Imprime el menu */
     LDR R0, =draw
     BL puts
     LDR R0, =title
@@ -56,8 +56,20 @@ ciclo:
 	LDR R0,=f_entrada_s         /* R0 contiene el formato de ingreso */
 	LDR R1,=entrada_actual    /* R1 contiene direccion donde almacena dato leido */
 	BL scanf
-    BL getchar
-	
+    
+    @--Para saber si se escribieron mas de 2 caracteres
+    @--si el numero Hex en la direccion no es 0, es porque se escribio algo mas
+    LDR R1,=entrada_actual
+    LDRB R1, [R1, #2]
+    CMP R1, #0
+    BNE ingreso_cantidad_invalida
+
+    @--Obteniendo las posiciones de lo ingresado por el usuario
+    BL get_positions        /* R0 obtiene la fila, R1 obtiene la columna */
+    CMP R0, #9
+    BEQ ingreso_casilla_invalida
+    CMP R1, #9
+    BEQ ingreso_casilla_invalida
 	
 	@--Metiendo los datos al tablero
 	/*
@@ -105,9 +117,26 @@ ciclo:
 	beq fin
 
 @---INGRESO INVALIDO---
-ingreso_invalido:
-	ldr r0, =mensaje_error
+ingreso_casilla_invalida:
+	ldr r0, =mensaje_error_casilla
 	bl puts
+
+	b ciclo
+
+ingreso_cantidad_invalida:
+	ldr r0, =mensaje_error_cantidad
+	bl puts
+
+    LDR R1,=entrada_actual
+    MOV R2, #0
+    STRB R2, [R1, #2]
+
+	b ciclo
+
+ingreso_ocupado:
+	ldr r0, =mensaje_error_ocupado
+	bl puts
+
 	b ciclo
 
 @---FIN DEL PROGRAMA---
@@ -192,7 +221,7 @@ imprimir_tablero:
     cont_pos_it .req R4             /* Contador de posiciones (por cada arreglo) */
     dir_arr_it .req R5
     MOV cont_arr_it, #0
-    LDR dir_arr_it, =columnas_indice2
+    LDR dir_arr_it, =columnas_indice
     ciclo_column_ind:
         LDRB R1, [dir_arr_it]
         LDR R0, =encabezado_tablero
@@ -246,6 +275,7 @@ imprimir_tablero:
 /*
 Subrutina que devuelve el turno del jugador segun el numero de turno
 R0 <- El numero de turno
+R0 -> 1 si es turno de Player1 y 2 si es turno de Player2
 */
 get_player_by_turn:
     AND R2, #0              /* Contador de n divisores */
@@ -264,6 +294,44 @@ get_player_by_turn:
     MOVEQ R0, #2
     MOV PC, LR              /* Regresa Link Register en Program Counter */
 
+/*
+Subrutina que convierte lo ingresado por el usuario a posiciones de array y en array y a la direccion especifica
+R0 -> numero de fila (array que se eligio)
+R1 -> numero de columna (posicion en array que se eligio)
+NOTA: Devuelve index desde cero, ej. Si se ingresa C4, para C devuelve 2 y para 4 devuelve 3.
+NOTA: Si devuelve 9 en alguna de las filas o columnas, significa que se ingreso invalida.
+*/
+get_positions:
+    LDR R2, =entrada_actual
+    LDRB R2, [R2, #1]
+    @--Obtener numero de fila (array que se eligio)
+    SUB R3, R2, #0x31      /* Se le resta en Hex para obtener bien el index del arreglo */
+    CMP R3, #4
+    MOVGT R3, #9
+    CMP R3, #0
+    MOVLT R3, #9
+    CMP R3, #9
+    BEQ fin_gp
+    @--Obtener numero de columna (posicion en array), por medio de la letra
+    LDR R2, =entrada_actual
+    LDRB R2, [R2]
+    LDR R4, =columnas_indice
+    MOV R5, #0      /* Contador */
+    ciclo_gp:
+        CMP R5, #5
+        MOVEQ R5, #9
+        BEQ fin_gp
+        LDRB R6, [R4]
+        CMP R6, R2
+        ADDNE R5, #1
+        ADDNE R4, #2
+        BNE ciclo_gp
+    fin_gp:
+        MOV R0, R3
+        MOV R1, R5
+        CMP R1, #9      /* Cuando el usuario solo ingresa un caracter, R1 termina siendo el numero 70032 */
+        MOVGT R1, #9    /* Entonces se comprueba si es mayor a 9 y si lo es, se coloca 9 */
+        MOV PC, LR
 
 @---DATOS----------------------------------------------------------------------------
 .data
@@ -282,7 +350,7 @@ get_player_by_turn:
 		.word 0x2D, 0x2D, 0x2D, 0x2D, 0x2D
 
 	@--Mostrar tablero go--
-    columnas_indice2:
+    columnas_indice:
         .asciz  "A","B","C","D","E"
 	separacion:
 		.asciz "\n--------------------------------------------"
@@ -298,20 +366,27 @@ get_player_by_turn:
         .asciz  "\t\tTurno Nº. %d"
 	
     @--Mensajes--
-	mensaje_error:
-		.asciz "Ingreso invalido, vuelva a intentar"
+	mensaje_error_casilla:
+		.asciz "Ingreso invalido. La casilla que ingresaste no existe"
+    mensaje_error_cantidad:
+		.asciz "Ingreso invalido. Ingresaste mas caracteres de los debidos"
+    mensaje_error_ocupado:
+		.asciz "Ingreso invalido. Esta casilla esta ocupada"
     msg_ingreso:
         .asciz  "\nIngresa la direccion de la casilla que quieres ingresar (ej. B3)"
 
     entrada_actual:
-        .asciz  "Z0"
+        .asciz "Z9"
+    catch_error:
+        .word 0
 
     @--Formatos de salida--
+    f_entrada_2s:
+        .asciz  "%2s"
     f_entrada_s:
         .asciz  "%s"
     f_enter:
         .asciz  "\n"
-
 
 	@--ASCIIART--
 	title:
