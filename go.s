@@ -101,6 +101,8 @@ ciclo:
 	CMP fila, #4
 	LDREQ R0, =fila_cinco
 
+	MOV R12, R0 		@ Para saber la fila en la que esta 
+
 	@--MOVIENDO LA POSICION DEL VECTOR--
 	MOV R2, #4          @ Multiplicador para aumentar debidamente en la direccion
 	SUB columna, #1	    @ Se le resta 1, porque el usuario ingresa (columna 1)
@@ -117,16 +119,23 @@ ciclo:
 	LDREQ turno_actual, =ficha_uno		@ Si es 1 es 'X'
 	LDRNE turno_actual, =ficha_dos		@ Si es 2 es 'O'
 	
-	LDR turno_actual, [turno_actual]	@ Obteniendo el valor 
-	STR	turno_actual, [R0]				@ Metiendo 'X' o 'O' al arreglo 
+	LDR R2, [turno_actual]				@ Obteniendo el valor 
+	STR	R2, [R0]						@ Metiendo 'X' o 'O' al arreglo 
 	
 	@--Pasando los datos para poder cambiar las 'fichas'--
-	MOV R2, turno_actual	            @ Mete el valor de la ficha
-	MOV R0, columna	                    @ Metiendo la fila que corresponde
+	MOV R0, R12	                    	@ Metiendo la fila que corresponde
 	
-	@ Cambiando las fichas por fila
-	@BL cambio_fila
+	@-CAMBIO DE LAS FICHAS POR FILA
+	LDR R2, [turno_actual]				@ Obteniendo el valor 
+	BL cambio_fila
 	
+	@--CAMBIO DE LAS FICHAS POR COLUMNA
+	MOV R1, columna
+	BL convertir_columnas_a_filas		
+	LDR R0, =fila_aux					@ Se obtiene la fia aux
+	LDR R2, [turno_actual]				@ Obteniendo el valor
+	BL cambio_fila						@ Se ordena la fila aux
+	BL cambio_columna					@ Se cambia la fila por columna
 	
 	
 	@--Sumandole 1 al turno y comparando si ya llego a 25--
@@ -180,8 +189,6 @@ fin:
     SWI 0
 
 
-
-
 @SUBRUTINAS LOCALES
 
 /*
@@ -228,12 +235,11 @@ cambio_fila:
 	MUL R7, R10			@ Para saber hasta donde se tiene que mover 
 	ADD R4, R6
 	
-	ciclo_cambio_fila:
-		ADD R4, #4		@ Cambiando de posicion de R0 al siguiente valor
-				
+	ciclo_cambio_fila:	
 		CMP R7, R6		@ Verificando si ya esta en la misma posicion 
-		beq fin_cambio_filas
+		BEQ fin_cambio_filas
 		
+		ADD R4, #4		@ Cambiando de posicion de R0 al siguiente valor
 		ADD R6, #4		@ Sumandole al contador 
 		
 		@--Comparando si esta vacia o no--
@@ -245,6 +251,110 @@ cambio_fila:
 	
 	fin_cambio_filas:
 		POP {R4-R12, PC}
+
+@---CAMBIO DE COLUMNAS---
+
+/*
+	Se encarga de convertir la columna en fila 
+	Param: r0 -> La direccion de memoria del arreglo (fila, pero es para el resto)
+	r1 -> La columna en la que esta 
+	r2 -> El tipo de ficha que se puso en este turno 
+	r3 -> *No hay requerimiento
+	Autor: Brandon Hernández
+	Return: No retorna nada D:
+*/
+convertir_columnas_a_filas:
+	PUSH {R4-R12, LR}
+	
+	@ Obteniendo la cantidad de movimientos que se deben de mover
+	MOV R4, #4			@ Servira para mover por el arreglo
+	MUL R4, r1
+	
+	@ Moviendo todas las filas a la columna correspondiente
+	LDR R5, =fila_aux
+	
+	LDR R6, =fila_uno	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R6, [R6]
+	STR R6, [R5]		@ Guardando un valor
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_dos	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R6, [R6]
+	STR R6, [R5]		@ Guardando un valor
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_tres	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R6, [R6]
+	STR R6, [R5]		@ Guardando un valor
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_cuatro	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R6, [R6]
+	STR R6, [R5]		@ Guardando un valor
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_cinco	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R6, [R6]
+	STR R6, [R5]		@ Guardando un valor
+	
+	POP {R4-R12, PC}
+
+/*
+	Cambia las fichas de dicha columna
+	Param: r0 -> La direccion de memoria del arreglo (fila, pero es para el resto)
+	r1 -> La columna en la que esta 
+	r2 -> El tipo de ficha que se puso en este turno 
+	r3 -> *No hay requerimiento
+	Autor: Brandon Hernández
+	Return: no retorna nada, pero si cambia algo en direccion
+*/
+cambio_columna:
+	PUSH {R4-R12, LR}
+	
+	@ Obteniendo la cantidad de movimientos que se deben de mover
+	MOV R4, #4			@ Servira para mover por el arreglo
+	MUL R4, r1
+	
+	@ Moviendo todas las filas a la columna correspondiente
+	LDR R5, =fila_aux
+	
+	LDR R6, =fila_uno	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R9, [R5]		@ Obteniendo el valor de la variable aux
+	STR R9, [R6]		@ Guardando el valor en la fila correspondiente
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_dos	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R9, [R5]		@ Obteniendo el valor de la variable aux
+	STR R9, [R6]		@ Guardando el valor en la fila correspondiente
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_tres	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R9, [R5]		@ Obteniendo el valor de la variable aux
+	STR R9, [R6]		@ Guardando el valor en la fila correspondiente
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_cuatro	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R9, [R5]		@ Obteniendo el valor de la variable aux
+	STR R9, [R6]		@ Guardando el valor en la fila correspondiente
+	ADD R5, R5, #4		@ Pasando a la siguiente posicion
+	
+	LDR R6, =fila_cinco	@ Obteniendo la direccion y moviendos la cantidad deseada
+	ADD R6, R6, R4		
+	LDR R9, [R5]		@ Obteniendo el valor de la variable aux
+	STR R9, [R6]		@ Guardando el valor en la fila correspondiente
+	
+	POP {R4-R12, PC}
+
+
 
 /*
 Subrutina que imprime la informacion del tablero actual.
@@ -463,6 +573,10 @@ who_won:
 	fila_cinco:
 		.word 0x2D, 0x2D, 0x2D, 0x2D, 0x2D
 
+	@ Fila Auxiliar
+	fila_aux:
+		.word 0x2D, 0x2D, 0x2D, 0x2D, 0x2D
+
 	@--Mostrar tablero go--
     columnas_indice:
         .asciz  "A","B","C","D","E"
@@ -481,9 +595,9 @@ who_won:
 	
 	@--Fichas--
 	ficha_uno:
-		.asciz "X"
+		.word 0x58  @ La X
 	ficha_dos:
-		.asciz "O"
+		.word 0x4F  @ La O
 	
     @--Mensajes--
 	msg_error_casilla:
