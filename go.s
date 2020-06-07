@@ -11,7 +11,6 @@
     Este juego consiste en que dos jugadores tendran fichas, uno "X" y el otro "O".
     El objetivo es convertir las fichas del otro jugador en fichas tuyas.
     Para ello debes de encerrar las fichas del otro jugador de manera horizontal o vertical.
-    Proximamente... diagonal
 */
 
 @PROGRAMA
@@ -20,10 +19,10 @@
 main:
 
     @--Imprime el menu--
-    /*LDR R0, =draw
+    LDR R0, =draw
     BL puts
     LDR R0, =title
-    BL puts*/
+    BL puts
 
     @--Alias principales--
     cont_main .req R8
@@ -635,7 +634,6 @@ who_won:
     f_enter:
         .asciz  "\n"
 
-/*
 	@--ASCIIART--
 	title:
         .asciz  "
@@ -677,4 +675,3 @@ who_won:
                     //////==========///888888888888888888888
                     /////============//888888888888888888888
                     ////////======//////88888888888888888888"
-*/
