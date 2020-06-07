@@ -63,8 +63,8 @@ ciclo:
     /* Para saber si se escribieron mas de 2 caracteres.
     Si el numero Hex en la direccion indicada (2 adelante de lo ingresado por el usuario) no es 0,
     es porque se escribio algo mas */
-    LDR R1, =entrada_actual
-    LDRB R1, [R1, #2]               @ Dos posiciones adelante de lo ingresado por el usuario
+    LDR R0, =entrada_actual
+    LDRB R1, [R0, #2]               @ Dos posiciones adelante de lo ingresado por el usuario
     CMP R1, #0                      @ Comparar. Si no es 0, es porque se escribio de mas
     BNE ingreso_cantidad_invalida   @ Vuelve a colocar el espacio en memoria anterior a 0
 
