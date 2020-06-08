@@ -52,6 +52,7 @@ ciclo:
     LDRB R1, [R0]
     LDR R0, =turno_ficha        @ Se imprime la ficha del jugador actual
     BL printf
+    MOV R1, cont_main
     LDR R0, =turno_no           @ Se imprime que turno del juego es
     BL printf
     LDR R0, =f_enter            @ Imprime un enter
