@@ -46,6 +46,12 @@ ciclo:
     LDR R0, =turno_player       @ Se imprime que turno de jugador es
     BL printf
     MOV R1, cont_main
+    CMP turno_actual, #1        @ Se compara si el turno es del jugador con ficha 'X'
+    LDREQ R0, =ficha_uno
+    LDRNE R0, =ficha_dos        @ Si no lo es, la ficha actual es 'O'
+    LDRB R1, [R0]
+    LDR R0, =turno_ficha        @ Se imprime la ficha del jugador actual
+    BL printf
     LDR R0, =turno_no           @ Se imprime que turno del juego es
     BL printf
     LDR R0, =f_enter            @ Imprime un enter
@@ -589,8 +595,10 @@ who_won:
         .asciz  " |   %c  "
     turno_player:
         .asciz  "Turno del jugador %d"
+    turno_ficha:
+        .asciz  "\tFicha: %c"
     turno_no:
-        .asciz  "\t\tTurno Nº. %d"
+        .asciz  "\tTurno Nº. %d"
 	
 	@--Fichas--
 	ficha_uno:
