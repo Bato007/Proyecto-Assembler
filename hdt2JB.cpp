@@ -13,33 +13,41 @@ de la sumatoria 1/(n)^2 es divergente o convergente.
 #include <stdlib.h>
 #include <sys/types.h> 
 #include <unistd.h> 
-#include <sys/wait.h>	
+#include <sys/wait.h>
+#include <iostream>
+#include <math.h>
+
+using namespace std;
   
-void serie() 
+void serie(int numero) 
 { 
     int fd[2];
     int numB;
     
     pipe(fd); // Se define el pipe de comunicacion
     
-	pid_t pid;
-	int status;
-	pid = fork();
+    pid_t pid;
+    int status;
     double x = 0, x1 = 0, r = 0;
+    pid = fork();
   
     if (pid == 0) {
-	    x = 2+4+6;
-        printf("HIJO: Valor de variable x = %f\n", x); 
+	for (int i = 1; i < numero; i+=2) {
+	    x += 1/pow(i,2);
+	}
+        printf("HIJO: Valor de la sumatoria = %f\n", x); 
         close(fd[0]);
         write(fd[1], &x, sizeof(x));
         close(fd[1]);
 		_exit(0);
 	}
     else {
-	    x1 = 1+3+5;
-        printf("PADRE: Valor de variable x1 = %f\n", x1); 
+	for (int i = 2; i < numero; i+=2) {
+	    x1 += 1/pow(i,2);
+	}
+        printf("PADRE: Valor de la sumatoria = %f\n", x1); 
 		
-	    waitpid(pid,&status,0);
+	waitpid(pid,&status,0);
 	
         close(fd[1]);
         numB = read(fd[0], &x, sizeof(x));
@@ -47,13 +55,16 @@ void serie()
         close(fd[0]);
         
         r = x + x1;
-        printf("TOTAL: Valor de la suma es = %f\n", r); 
+        printf("TOTAL: La sumatoria es = %f\n", r); 
 	
-	}
+    }
 }
 
 int main() 
 { 
-    serie(); 
+    int numero;
+    printf("Ingrese el numero n para la sumatoria: \n");
+    cin>>numero;
+    serie(numero); 
     return 0; 
 } 
